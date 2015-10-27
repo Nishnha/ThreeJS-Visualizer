@@ -1,22 +1,19 @@
-var scene, camera, renderer, controls, analyser, dataArray, bufferLength;
+var scene, camera, renderer, controls, dataArray, analyser, bufferLength;
 window.cubes = [];
 window.cubeMesh = [];
-window.blocks = [];
-window.floatingBlocks = [];
+window.light = [];
+window.floatingLights = [];
 
-init();
-loadAudio();
-animate();
-initGraphics();
+var audioSource = document.getElementById("audioSource");
+audioSource.addEventListener('click', function(){
+	console.log(audio.src);
+});
 
 function init() {
 	scene = new THREE.Scene();
-	//camera takes args FOV, aspect ratio, closest, farthest
 	camera = new THREE.PerspectiveCamera( 75,  window.innerWidth / window.innerHeight, 0.1, 1000);
-
-	//adds renderer
 	renderer = new THREE.WebGLRenderer( {antialias: true} );
-	renderer.setSize( window.innerWidth, window.innerHeight-100 ); //vertical size is decresed so scrolling isn't needed.
+	renderer.setSize( window.innerWidth, window.innerHeight-100 );
 	document.body.appendChild( renderer.domElement );
 
 	//initializes OrbitControls
@@ -27,18 +24,6 @@ function init() {
 		camera.position.z
 	);
 
-	// function setOrientationControls(e) {
-	// 	if (!e.alpha) {
-	// 		return;
-	// 	}
-	// 	controls = new THREE.DeviceOrientationControls(camera, true);
-	// 	controls.connect();
-	// 	controls.update();
-	// 	element.addEventListener('click', fullscreen, false);
-	// 	window.removeEventListener('deviceorientation', setOrientationControls, true);
-	// }
-	// window.addEventListener('deviceorientation', setOrientationControls, true);
-
 	//resizes canvas if window is resized
 	window.addEventListener( 'resize', function() {
 		camera.aspect = window.innerWidth / window.innerHeight;
@@ -47,30 +32,61 @@ function init() {
 	});
 }
 
-function loadAudio() {
-  //creates audio context with multiple browser support
-  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function initAudio() {
 	var audio = document.getElementById("audio");
-	//if a song is chosen, the song will be loaded and played
-	var audioSelector = document.getElementById("audioSelector");
-	var URL = window.URL || window.webkitURL;
-	audio.src = "rayman.ogg"; //default audio is rayman
-	audioSelector.addEventListener ('change', function() {
-		audio.src = URL.createObjectURL(audioSelector.files[0]); //get url to the object (song)
-		audio.load();
-		audio.play();
+	//audio.src = "Rayman.ogg";
+
+	//set audio as a user selected song
+	//function getSong() {
+		var songFile = document.getElementById("songFile");
+		songFile.addEventListener ('change', function() {
+				audio.src = URL.createObjectURL(document.getElementById('songFile').files[0]);
+				audio.load();
+				audio.play();
+		});
+	//}
+
+	//set audio as the user's microphone
+	var micButton = document.getElementById("useMic");
+	micButton.addEventListener("click", function useMic() {
+		navigator.mediaDevices = navigator.mediaDevices ||
+													 ((navigator.mozGetUserMedia ||
+														 navigator.webkitGetUserMedia) ? {
+		 getUserMedia: function(c) {
+			 return new Promise(function(y, n) {
+				 (navigator.mozGetUserMedia ||
+				  navigator.webkitGetUserMedia).call(navigator, c, y, n);
+			 });
+		 }
+	 	} : null);
+		//if the user allows mic
+		navigator.mediaDevices.getUserMedia({audio:true})
+		.then(function(stream) {
+			audio.src = window.URL.createObjectURL(stream);
+			audio.play();
+			//console.log(audio.src);
+			onloadedmetadata = function(e) {
+	    	audio.play();
+			};
+		})
+		.catch(function(err) {
+			console.log(err.name + ": " + err.message);
+		});
 	});
-  //creates analyser
-  analyser = audioCtx.createAnalyser();
+	//must create audio context to process audio info
+	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+	analyser = audioCtx.createAnalyser();
   analyser.smoothingTimeConstant = 0.85;
-  analyser.fftSize = 1024;
-  //connects audio source to analyser, analyser to speakers
-  var source = audioCtx.createMediaElementSource(audio);
-	source.connect(analyser);
-  analyser.connect(audioCtx.destination);
-  //creates an unsigned 8 bit array of the same length as the fftSize
+	analyser.fftSize = 1024;
+
+	//dataArray is used to control the music visualizer
 	bufferLength = analyser.frequencyBinCount/2;
 	dataArray = new Uint8Array(bufferLength);
+
+	//connect audio to the analyser, analyzer to the speaker
+	var source = audioCtx.createMediaElementSource(audio);
+	source.connect(analyser);
+	analyser.connect(audioCtx.destination);
 }
 
 function initGraphics() { //renders the cubes into the scene
@@ -78,8 +94,8 @@ function initGraphics() { //renders the cubes into the scene
 	var cubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
 	var cubeMaterial = new THREE.MeshBasicMaterial ( {color: 0xffddff, transparent: true, opacity: 0.8}	);
 
-	var blockGeometry = new THREE.BoxGeometry( 1, Math.random() , 1);
-	var blockMaterial = new THREE.MeshBasicMaterial ( {color: 0x66CCFF} );
+	var lightGeometry = new THREE.SphereGeometry(1, 20, 20);
+	var lightMaterial = new THREE.MeshBasicMaterial ( {color: 0x66CCFF} );
 
 	//radius of the visualizer circle
 	var radius = 200;
@@ -95,12 +111,12 @@ function initGraphics() { //renders the cubes into the scene
 
 	//creates a bunch of random cubes
 	for(var i = 0; i < cubes.length; i++) {
-		var blocks = new THREE.Mesh( blockGeometry, blockMaterial);
-		blocks.position.y = ( Math.random() - .5 ) * radius;
-		blocks.position.z = ( Math.random() - .5 ) * radius;
-		blocks.position.x = ( Math.random() - .5 ) * radius;
-		floatingBlocks[i] = blocks;
-		scene.add(blocks);
+		var light = new THREE.Mesh( lightGeometry, lightMaterial);
+		light.position.x = (Math.random() - .5 ) * radius;
+		light.position.y = (Math.random() - .5 ) * radius;
+		light.position.z = (Math.random() - .5 ) * radius;
+		floatingLights[i] = light;
+		scene.add(light);
 	}
 }
 
@@ -117,10 +133,10 @@ function draw() { //changes the position of the cube every frame and changes its
 		//rescales each cube iteratively on the z axis
     cubes[i].scale.y = Math.max(1, dataArray[i]*dataArray[i]/300);
 		//changes the scale of the random blocks
-		var blockSize = Math.max(.1, dataArray[i]/400 );
-		floatingBlocks[i].scale.x = blockSize;
-		floatingBlocks[i].scale.y = blockSize;
-		floatingBlocks[i].scale.z = blockSize;
+		var lightSize = Math.max(.1, dataArray[i]/400 );
+		floatingLights[i].scale.x = lightSize;
+		floatingLights[i].scale.y = lightSize;
+		floatingLights[i].scale.z = lightSize;
 	}
 }
 
@@ -134,3 +150,8 @@ function animate() {
 function render() {
 	renderer.render(scene, camera);
 }
+
+init();
+initAudio();
+animate();
+initGraphics();
