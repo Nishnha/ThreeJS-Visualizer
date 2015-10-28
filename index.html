@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>VR Directed Study - Nishant Sinha</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <style>
+            body {margin: 0;}
+            canvas {width: 100%; height: 90%;}
+        </style>
+    </head>
+    <body>
+        <label for="songFile">Add an mp3 file</label>
+        <input type="file" id="songFile"></input>
+        <button id="useMic">Use your microphone!</button>
+        <button id="audioSource">Log the current audio source!</button>
+        <audio Id="audio" controls autoplay></audio>
+        <script src="js/three.min.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/StereoEffect.js"></script>
+        <script src="js/visualizer.js"></script>
+    </body>
+</html>
