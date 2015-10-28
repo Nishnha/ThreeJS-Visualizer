@@ -39,7 +39,7 @@ function addControls(audio, audioCtx, analyser) {
   .addEventListener("change", function() {
     audio.src = URL.createObjectURL(document.getElementById('songFile').files[0]);
     mic.disconnect();
-    analyser.connect(AudioCtx.destination);
+    analyser.connect(audioCtx.destination);
     audio.load();
     audio.play();
   });
