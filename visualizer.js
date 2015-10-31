@@ -37,7 +37,7 @@ renderer = new THREE.WebGLRenderer({
 renderer.setSize( window.innerWidth, window.innerHeight-100 );
 document.body.appendChild( renderer.domElement );
 
-//resize canvas automatically
+// Resize canvas automatically
 window.addEventListener( 'resize', function() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -57,7 +57,7 @@ function addControls(audio, audioCtx, analyser) {
   // User choses mic
   document.getElementById("useMic")
           .addEventListener("click", function() {
-            //allows mic
+            // Allows mic
             navigator.mediaDevices.getUserMedia({audio: true})
             .then(function(stream) {
               audio.pause();
@@ -98,6 +98,7 @@ function initAudio() {
 
   // Connect audio to the analyser, analyzer to the speaker
   var audio = document.getElementById("audio");
+  audio.src = "Rayman.ogg";
   var source = audioCtx.createMediaElementSource(audio);
   source.connect(analyser);
   analyser.connect(audioCtx.destination);
