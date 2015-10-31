@@ -86,6 +86,7 @@ function addControls(audio, audioCtx, analyser) {
 //////////////////////////////////////////////////////////////////////////////////
 
 function initAudio() {
+  var audio = document.getElementById("audio");
   // Create audio context to process audio info
   var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioCtx.createAnalyser();
@@ -97,7 +98,6 @@ function initAudio() {
   dataArray = new Uint8Array(bufferLength);
 
   // Connect audio to the analyser, analyzer to the speaker
-  var audio = document.getElementById("audio");
   audio.src = "Rayman.ogg";
   var source = audioCtx.createMediaElementSource(audio);
   source.connect(analyser);
@@ -105,6 +105,7 @@ function initAudio() {
 
   // Let the user select the connection
   addControls(audio, audioCtx, analyser);
+  //draw(analyser);
 }
 
 
@@ -148,7 +149,7 @@ function addBars() {
 //		Draw bars
 //////////////////////////////////////////////////////////////////////////////////
 
-function draw() {
+function draw(analyser) {
   analyser.getByteFrequencyData(dataArray);
   var t = new Date().getTime();
   var radius = 200;
@@ -182,7 +183,7 @@ var previousTime = performance.now()
 requestAnimationFrame(function animate(now){
 
   requestAnimationFrame(animate);
-  draw();
+  draw(analyser);
 
   onRenderFcts.forEach(function(onRenderFct){
     onRenderFct(now, now - previousTime)
@@ -193,7 +194,6 @@ requestAnimationFrame(function animate(now){
 
 // function animate() {
 //   requestAnimationFrame(animate);
-//   controls.update();
 //   draw();
 //   render();
 // }
@@ -242,6 +242,5 @@ onRenderFcts.push(function(){
   })
 });
 
-init();
 initAudio();
 addBars();
