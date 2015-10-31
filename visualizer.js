@@ -114,18 +114,21 @@ function initAudio() {
 //////////////////////////////////////////////////////////////////////////////////
 
 function addPlane() {
-  var planeGeometry = new THREE.PlaneGeometry(1,1,200,200)
+  var planeGeometry = new THREE.PlaneGeometry(200,200,200,200)
   var planeMaterial = new THREE.MeshBasicMaterial({
-    color: 0x000000
-  })
+    color: 0x0000ff,
+    transparent: false
+  });
   var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  scene.add(plane)
+  plane.position.z = 1;
+
+  scene.add(plane);
 }
 
 function addBars() {
   cubes = new Array(bufferLength);
 
-  var cubeGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+  var cubeGeometry = new THREE.BoxGeometry( .05, .05, .05 );
   var cubeMaterial = new THREE.MeshBasicMaterial ({
     color: 0x00ccff,
     transparent: true,
@@ -133,12 +136,12 @@ function addBars() {
   });
 
   // Creates a bufferLength number of cubes and set their positions
-  var radius = 200;
+  var radius = 10;
     for(var i = 0; i < cubes.length; i++) {
     var cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
     var angle = i * Math.PI * 2 / cubes.length;
     cubeMesh.position.x = Math.cos(angle) * radius;
-    cubeMesh.position.z = Math.sin(angle) * radius;
+    cubeMesh.position.y = Math.sin(angle) * radius;
     cubes[i] = cubeMesh;
     scene.add(cubeMesh);
   }
@@ -149,21 +152,22 @@ function addBars() {
 //		Draw bars
 //////////////////////////////////////////////////////////////////////////////////
 
-function draw(analyser) {
+onRenderFcts.push(function(analyser) {
   analyser.getByteFrequencyData(dataArray);
   var t = new Date().getTime();
-  var radius = 200;
+  var radius = 5;
   var slowFactor = 1/100000;
   for (var i = 0; i < cubes.length; i++) {
     // Rotate each bar in a circle
     var angle = i * Math.PI * 2 / cubes.length + ( t * slowFactor * Math.PI * 2  );
     cubes[i].position.x = Math.cos(angle) * radius;
-    cubes[i].position.z = Math.sin(angle) * radius;
+    cubes[i].position.y = Math.sin(angle) * radius;
+    cubes[i].position.z = 2;
 
     // Rescales each bar accordng to the dataArray
-    cubes[i].scale.y = Math.max(1, dataArray[i]*dataArray[i]/300);
+    cubes[i].scale.z = Math.max(1, dataArray[i]*dataArray[i]/2500);
   }
-}
+})
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -183,33 +187,23 @@ var previousTime = performance.now()
 requestAnimationFrame(function animate(now){
 
   requestAnimationFrame(animate);
-  draw(analyser);
 
-  onRenderFcts.forEach(function(onRenderFct){
-    onRenderFct(now, now - previousTime)
+  onRenderFcts.forEach(function(onRenderFct) {
+    onRenderFct(analyser)
   })
 
   previousTime	= now
 })
 
-// function animate() {
-//   requestAnimationFrame(animate);
-//   draw();
-//   render();
-// }
-//
-// function render() {
-//   renderer.render(scene, camera);
-// }
 
 //////////////////////////////////////////////////////////////////////////////////
-//		Add AR stuff
+//		Add AR stuff **Adapted from threex.webar
 //////////////////////////////////////////////////////////////////////////////////
 
-// init the marker recognition
+// Init the marker recognition
 var jsArucoMarker	= new THREEx.JsArucoMarker()
 
-// init the image source grabbing
+// Init the image source grabbing
 if( false ){
   var videoGrabbing = new THREEx.VideoGrabbing()
   jsArucoMarker.videoScaleDown = 10
@@ -221,7 +215,7 @@ if( false ){
   jsArucoMarker.videoScaleDown = 10
 } else console.assert(false)
 
-// attach the videoGrabbing.domElement to the body
+// Attach the videoGrabbing.domElement to the body
 document.body.appendChild(videoGrabbing.domElement)
 
 // process the image source with the marker recognition
@@ -230,14 +224,11 @@ onRenderFcts.push(function(){
   var markers	= jsArucoMarker.detectMarkers(domElement)
   var object3d = scene
 
+  // Hide the objects until the marker has been found
   object3d.visible = false
 
-  // see if this.markerId has been found
   markers.forEach( function(marker) {
-    // if( marker.id !== 265 )	return
-
     jsArucoMarker.markerToObject3D(marker, object3d)
-
     object3d.visible = true
   })
 });
