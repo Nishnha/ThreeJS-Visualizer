@@ -10,13 +10,18 @@
     </head>
     <body>
         <label for="songFile">Add an mp3 file</label>
-        <input type="file" id="songFile"></input>
+        <input  id="songFile" type="file"></input>
         <button id="useMic">Use your microphone!</button>
-        <button id="audioSource">Log the current audio source!</button>
-        <audio Id="audio" controls autoplay></audio>
+        <audio  id="audio" controls autoplay></audio>
+
+        <script src="js-aruco/svd.js"></script>
+        <script src="js-aruco/posit1-patched.js"></script>
+        <script src="js-aruco/cv.js"></script>
+        <script src="js-aruco/aruco.js"></script>
+
+        <script src="js/threex.jsarucomarker.js"></script>
+        <script src="js/threex.webcamgrabbing.js"></script>
         <script src="js/three.min.js"></script>
-        <script src="js/OrbitControls.js"></script>
-        <script src="js/StereoEffect.js"></script>
         <script src="js/visualizer.js"></script>
     </body>
 </html>
