@@ -52,22 +52,58 @@ var onRenderFcts = [];
 //		Control the visualizer
 //////////////////////////////////////////////////////////////////////////////////
 
+// function addControls(audio, audioCtx, analyser) {
+//   var mic;
+//   // User choses mic
+//   document.getElementById("useMic")
+//           .addEventListener("click", function() {
+//             // Allows mic
+//             navigator.mediaDevices.getUserMedia({audio:true})
+//             .then(function(stream) {
+//               audio.pause();
+//               analyser.disconnect();
+//               mic = audioCtx.createMediaStreamSource(stream);
+//               mic.connect(analyser);
+//             })
+//             .catch(function(err) {
+//               console.log(err.name + ": " + err.message);
+//             });
+//   });
+//   // User uploads a song file
+//   document.getElementById("songFile")
+//           .addEventListener("change", function() {
+//             audio.src = URL.createObjectURL(document.getElementById('songFile').files[0]);
+//             mic.disconnect();
+//             analyser.connect(audioCtx.destination);
+//             audio.load();
+//             audio.play();
+//   });
+// }
+
 function addControls(audio, audioCtx, analyser) {
   var mic;
+  navigator.getUserMedia =  navigator.getUserMedia ||
+                            navigator.webkitGetUserMedia ||
+                            navigator.mozGetUserMedia;
   // User choses mic
   document.getElementById("useMic")
           .addEventListener("click", function() {
             // Allows mic
-            navigator.mediaDevices.getUserMedia({audio: true})
-            .then(function(stream) {
-              audio.pause();
-              analyser.disconnect();
-              mic = audioCtx.createMediaStreamSource(stream);
-              mic.connect(analyser);
-            })
-            .catch(function(err) {
-              console.log(err.name + ": " + err.message);
-            });
+            if (navigator.getUserMedia) {
+              navigator.getUserMedia( {audio:true},
+              function(stream) {
+                audio.pause();
+                analyser.disconnect();
+                mic = audioCtx.createMediaStreamSource(stream);
+                mic.connect(analyser);
+              },
+              function(err) {
+                console.log(err.name + ": " + err.message);
+              }
+            );
+          } else {
+              console.log("getUserMedia not supported.");
+          }
   });
   // User uploads a song file
   document.getElementById("songFile")
