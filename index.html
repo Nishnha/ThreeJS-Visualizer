@@ -9,10 +9,17 @@
         </style>
     </head>
     <body>
+      <div id="controls">
         <label for="songFile">Add an mp3 file</label>
         <input  id="songFile" type="file"></input>
         <button id="useMic">Use your microphone!</button>
         <audio  id="audio" controls autoplay></audio>
+
+        <form>
+          <input id="float" type="checkbox" value="float" name="type"> Enable floating objects
+          <input id="hazard" type="checkbox" value="hazard" name="type"> Show hazards!
+        </form>
+      </div>
 
         <script src="js-aruco/svd.js"></script>
         <script src="js-aruco/posit1-patched.js"></script>
@@ -23,5 +30,6 @@
         <script src="js/threex.webcamgrabbing.js"></script>
         <script src="js/three.min.js"></script>
         <script src="visualizer.js"></script>
+
     </body>
 </html>

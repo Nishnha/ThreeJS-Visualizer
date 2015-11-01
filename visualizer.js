@@ -1,6 +1,9 @@
-var scene, camera, renderer, controls, dataArray, analyser, bufferLength;
+var scene, visualizer, industrial, camera, renderer, controls, dataArray, timeArray, analyser, bufferLength;
 window.cubes = [];
 window.cubeMesh = [];
+window.waves = [];
+window.cubeMesh = [];
+
 
 //////////////////////////////////////////////////////////////////////////////////
 //		Check if all features are supported
@@ -29,6 +32,9 @@ window.cubeMesh = [];
 
 // Init scene and renderer
 scene = new THREE.Scene();
+visualizer = new THREE.Object3D;
+industrial = new THREE.Object3D;
+scene.add(visualizer, industrial);
 camera = new THREE.PerspectiveCamera( 75,  window.innerWidth / window.innerHeight, 0.1, 1000);
 renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -51,34 +57,6 @@ var onRenderFcts = [];
 //////////////////////////////////////////////////////////////////////////////////
 //		Control the visualizer
 //////////////////////////////////////////////////////////////////////////////////
-
-// function addControls(audio, audioCtx, analyser) {
-//   var mic;
-//   // User choses mic
-//   document.getElementById("useMic")
-//           .addEventListener("click", function() {
-//             // Allows mic
-//             navigator.mediaDevices.getUserMedia({audio:true})
-//             .then(function(stream) {
-//               audio.pause();
-//               analyser.disconnect();
-//               mic = audioCtx.createMediaStreamSource(stream);
-//               mic.connect(analyser);
-//             })
-//             .catch(function(err) {
-//               console.log(err.name + ": " + err.message);
-//             });
-//   });
-//   // User uploads a song file
-//   document.getElementById("songFile")
-//           .addEventListener("change", function() {
-//             audio.src = URL.createObjectURL(document.getElementById('songFile').files[0]);
-//             mic.disconnect();
-//             analyser.connect(audioCtx.destination);
-//             audio.load();
-//             audio.play();
-//   });
-// }
 
 function addControls(audio, audioCtx, analyser) {
   var mic;
@@ -132,6 +110,7 @@ function initAudio() {
   // dataArray controls the visualizer
   bufferLength = analyser.frequencyBinCount/2;
   dataArray = new Uint8Array(bufferLength);
+  timeArray = new Uint8Array(bufferLength);
 
   // Connect audio to the analyser, analyzer to the speaker
   audio.src = "Rayman.ogg";
@@ -149,59 +128,73 @@ function initAudio() {
 //		Initialize objects
 //////////////////////////////////////////////////////////////////////////////////
 
+
+function addBars() {
+  cubes = new Array(bufferLength);
+  var cubeGeometry = new THREE.BoxGeometry( .05, .05, .1 );
+  var cubeMaterial = new THREE.MeshBasicMaterial ({
+    color: 0x00ccff,
+    transparent: true,
+    opacity: .85
+  });
+  for(var i = 0; i < cubes.length; i++) {
+    cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cubes[i] = cubeMesh;
+    cubes[i].position.y = (i/16)-2;
+    visualizer.add(cubeMesh);
+  }
+}
+
+function addWave() {
+  waves = new Array(bufferLength);
+  var waveGeometry = new THREE.BoxGeometry(.05, .065, .05);
+  var waveMaterial = new THREE.MeshBasicMaterial({
+    color: 0xFF0066,
+    transparent: true,
+    opacity: .85
+  });
+  for(var i = 0; i < waves.length; i++) {
+    waveMesh = new THREE.Mesh(waveGeometry, waveMaterial);
+    waves[i] = waveMesh;
+    waves[i].position.y = (i/16)-2;
+    visualizer.add(waveMesh);
+  }
+}
+
+function addHazard() {
+  var hazardPic = THREE.ImageUtils.loadTexture("1.png");
+  var hazardMaterial = new THREE.SpriteMaterial({map: hazardPic});
+  hazard = new THREE.Sprite(hazardMaterial);
+  hazard.scale.set(5, 5, 5);
+  industrial.add(hazard);
+}
+
 function addPlane() {
-  var planeGeometry = new THREE.PlaneGeometry(200,200,200,200)
+  var planeGeometry = new THREE.PlaneGeometry(6,6,3,3)
   var planeMaterial = new THREE.MeshBasicMaterial({
     color: 0x0000ff,
     transparent: false
   });
   var plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.position.z = 1;
-
-  scene.add(plane);
+  industrial.add(plane);
 }
-
-function addBars() {
-  cubes = new Array(bufferLength);
-
-  var cubeGeometry = new THREE.BoxGeometry( .05, .05, .05 );
-  var cubeMaterial = new THREE.MeshBasicMaterial ({
-    color: 0x00ccff,
-    transparent: true,
-    opacity: 0.8
-  });
-
-  // Creates a bufferLength number of cubes and set their positions
-  var radius = 10;
-    for(var i = 0; i < cubes.length; i++) {
-    var cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    var angle = i * Math.PI * 2 / cubes.length;
-    cubeMesh.position.x = Math.cos(angle) * radius;
-    cubeMesh.position.y = Math.sin(angle) * radius;
-    cubes[i] = cubeMesh;
-    scene.add(cubeMesh);
-  }
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////
 //		Draw bars
 //////////////////////////////////////////////////////////////////////////////////
 
+var t = new Date().getTime();
+var slowFactor = 1/100000;
+
 onRenderFcts.push(function(analyser) {
   analyser.getByteFrequencyData(dataArray);
-  var t = new Date().getTime();
-  var radius = 5;
-  var slowFactor = 1/100000;
+  analyser.getByteTimeDomainData(timeArray);
   for (var i = 0; i < cubes.length; i++) {
-    // Rotate each bar in a circle
-    var angle = i * Math.PI * 2 / cubes.length + ( t * slowFactor * Math.PI * 2  );
-    cubes[i].position.x = Math.cos(angle) * radius;
-    cubes[i].position.y = Math.sin(angle) * radius;
-    cubes[i].position.z = 2;
-
-    // Rescales each bar accordng to the dataArray
-    cubes[i].scale.z = Math.max(1, dataArray[i]*dataArray[i]/2500);
+    // Control bar graph
+    cubes[i].scale.x = Math.max(1, dataArray[i]*dataArray[i]/200);
+    // Control oscilloscope
+    waves[i].position.x = timeArray[i]/64.0;
   }
 })
 
@@ -209,9 +202,6 @@ onRenderFcts.push(function(analyser) {
 //////////////////////////////////////////////////////////////////////////////////
 //		Render scene
 //////////////////////////////////////////////////////////////////////////////////
-
-// set the scene as visible
-scene.visible	= false
 
 // render the scene
 onRenderFcts.push(function(){
@@ -236,6 +226,9 @@ requestAnimationFrame(function animate(now){
 //		Add AR stuff **Adapted from threex.webar
 //////////////////////////////////////////////////////////////////////////////////
 
+// Scene only shows if marker detected or float enabled
+scene.visible = false;
+
 // Init the marker recognition
 var jsArucoMarker	= new THREEx.JsArucoMarker()
 
@@ -258,16 +251,30 @@ document.body.appendChild(videoGrabbing.domElement)
 onRenderFcts.push(function(){
   var domElement = videoGrabbing.domElement
   var markers	= jsArucoMarker.detectMarkers(domElement)
-  var object3d = scene
+  var object3d = scene;
 
   // Hide the objects until the marker has been found
-  object3d.visible = false
+  var float = document.getElementById("float");
+  if (float.checked) {
+    scene.visible = true;
+  }
 
+  // When the hazard checkbox is checked, show the hazard icon and hide the visualizer
+  var hazardCheck = document.getElementById("hazard");
   markers.forEach( function(marker) {
     jsArucoMarker.markerToObject3D(marker, object3d)
-    object3d.visible = true
+    scene.visible = true;
+    if (!hazardCheck.checked) {
+      visualizer.visible = true;
+      industrial.visible = false;
+    } else {
+      visualizer.visible = false;
+      industrial.visible = true;
+    }
   })
 });
 
 initAudio();
+addHazard();
+addWave();
 addBars();
