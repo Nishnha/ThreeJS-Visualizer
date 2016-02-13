@@ -1,20 +1,15 @@
-#Three.js Music Visualizer (mostly)
+#A Three.js Music Visualizer
 
-This visualizer was built as a school project, which is why it has unrelated features like the hazard button which demos possible industrial use of augmented reality.
+This visualizer was built as a school project. It displays 3D-bars that correspond to the frequency of music or sound and tracks an ArUco marker.
 
 ###To use the demo
+You must have a camera to use this demo. It has been tested with on a laptop and android phone.
 
-You must have a camera to use this demo. It's been tested on PC and Androi and does NOT work with iPhones.
 
-Print out or open the [QR cod] (https://github.com/Nishnha/ThreeJS-Visualizer/blob/gh-pages/aurco_265.png) and go to [the demo page] (http://nishnha.github.io/ThreeJS-Visualizer). When prompted for camera use, accept.
+Print out or open [the QR code] (https://github.com/Nishnha/ThreeJS-Visualizer/blob/gh-pages/aurco_265.png) and go to [the demo page] (http://nishnha.github.io/ThreeJS-Visualizer). When prompted for camera use, hit accept.
 
-To use the AR features hold the QR code in front of the camera and a music visualizer will appear! Checking "Enable floating objects" will keep any objects from disappearing if the marker is not detected. "Show hazzards!" is a demo of possible industrial use for augmented reality technology.
+Hold the QR code in front of the camera and the music visualizer will appear! Checking "Enable floating objects" will keep any objects from disappearing if the marker is not detected.
 
-Click on "Choose File" to change the song from the default to your own, or click on "Use your microphone!" to, well... use your microphone.
-
-###To be added:
-- non-AR demo (already built, check visualizer branch )
-- reactive backdrop
-- removal of global variables, general code cleanup
+Click on "Choose File" to choose a song, or click on "Use your microphone!" to use your microphone.
 
 #####Built by Nishant Sinha using threex.webar

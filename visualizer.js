@@ -43,7 +43,7 @@ renderer = new THREE.WebGLRenderer({
 renderer.setSize( window.innerWidth, window.innerHeight-100 );
 document.body.appendChild( renderer.domElement );
 
-// Resize canvas automatically
+// Resize canvas Savant - Broken.mp3automatically
 window.addEventListener( 'resize', function() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -113,7 +113,7 @@ function initAudio() {
   timeArray = new Uint8Array(bufferLength);
 
   // Connect audio to the analyser, analyzer to the speaker
-  audio.src = "Rayman.ogg";
+  audio.src = "Savant - Broken.mp3";
   var source = audioCtx.createMediaElementSource(audio);
   source.connect(analyser);
   analyser.connect(audioCtx.destination);
